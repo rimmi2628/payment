@@ -69,6 +69,119 @@ app.get('/', (req, res) => {
   });
 
 
+//   app.post('/payment', async (req, res) => {
+//     const { email, cardNumber, expMonth, expYear, cvc } = req.body;
+  
+//     try {
+//       let customer = await Customer.findOne({
+//         where: { email },
+//       });
+  
+//       if (!customer) {
+//         // Step 1: Create a new customer in Stripe
+//         const stripeCustomer = await stripe.customers.create({
+//           email,
+//         });
+  
+//         // Step 2: Store the customer in the database
+//         customer = await Customer.create({
+//           email,
+//           stripe_id: stripeCustomer.id,
+//         });
+//       }
+  
+//       // Step 3: Retrieve customer data from Stripe
+//       const stripeCustomer = await stripe.customers.retrieve(customer.stripe_id);
+//     console.log("stripecustomers.....",stripeCustomer)
+//       // Step 4: Check if the customer already has the new card
+//       // const existingCards =  stripeCustomer.sources ? stripeCustomer.sources.data : [];
+//       // console.log("existingCards",existingCards);
+//       // const cardExists = existingCards.some(card => card.last4 === cardNumber.substr(-4));
+//       // console.log("cardExists",cardExists);
+
+  
+//       // if (cardExists) {
+//       //   const message = 'Card already exists for the customer.';
+//       //   return res.status(400).json({ message });
+//       // }
+
+//       const token = await stripe.tokens.create({
+//         card: {
+//           number: cardNumber,
+//           exp_month:expMonth ,
+//           exp_year: expYear,
+//           cvc: cvc,
+//         },
+//       });
+//       console.log("token,,,,,",token)
+
+//     const existingCards = token.card;
+//   console.log("existingCards", existingCards);
+//   const exist=existingCards.last4
+//   console.log("cfjhbbvb",exist)
+//  const card= cardNumber.substr(-4)
+//  console.log("cbhjdsbvjub",card)
+//   let cardExists = false;
+//   if (existingCards && existingCards.last4 === cardNumber.substr(-4)) {
+
+//     const str= await stripe.customers.createSource(customer.stripe_id, {
+//       source:	'tok_visa'
+     
+      
+      
+//     });
+//     console.log("v hbhjfbgv",str);
+
+//     const message = 'New card added to the customer.';
+//     return res.status(200).json({ message });
+//     // console.log("bcfdshbgvushvjug")
+//     // // cardExists = true;
+//     // console.log("card existas")
+//     // return res.status(400).json({ message:'Card already exists for the customer.' });
+//   }
+//   else{
+//     cardExists = true;
+//     console.log("card existas")
+//     return res.status(400).json({ message:'Card already exists for the customer.' });
+//     }
+  
+
+// console.log("cardExists", cardExists);
+      // const existingCards =  token.card
+      // console.log("existingCards",existingCards);
+      
+      // const cardExists = existingCards.some(card => card.last4 === cardNumber.substr(-4));
+      // console.log("cardExists",cardExists);
+
+
+      // if (cardExists) {
+      //   const message = 'Card already exists for the customer.';
+      //   console.log("card existas")
+      //   return res.status(400).json({ message });
+      // }
+
+
+      // Step 5: Create a new card for the customer in Stripe
+    //  const str= await stripe.customers.createSource(customer.stripe_id, {
+    //     source:	'tok_visa'
+       
+        
+        
+    //   });
+    //   console.log("v hbhjfbgv",str);
+  
+    //   const message = 'New card added to the customer.';
+    //   return res.status(200).json({ message });
+
+    // console.log("bcfdshbgvushvjug");
+  
+  // }catch (error) {
+  //     console.error('Error:', error);
+  //     return res.status(500).json({ error });
+  //   }
+  // });
+
+
   app.post('/payment', async (req, res) => {
     const { email, cardNumber, expMonth, expYear, cvc } = req.body;
   
@@ -90,60 +203,26 @@ app.get('/', (req, res) => {
         });
       }
   
-      // Step 3: Retrieve customer data from Stripe
-      const stripeCustomer = await stripe.customers.retrieve(customer.stripe_id);
-    console.log("stripecustomers.....",stripeCustomer)
-      // Step 4: Check if the customer already has the new card
-      // const existingCards =  stripeCustomer.sources ? stripeCustomer.sources.data : [];
-      // console.log("existingCards",existingCards);
-      // const cardExists = existingCards.some(card => card.last4 === cardNumber.substr(-4));
-      // console.log("cardExists",cardExists);
-
-  
-      // if (cardExists) {
-      //   const message = 'Card already exists for the customer.';
-      //   return res.status(400).json({ message });
-      // }
-
       const token = await stripe.tokens.create({
         card: {
           number: cardNumber,
-          exp_month:expMonth ,
+          exp_month: expMonth,
           exp_year: expYear,
-          cvc: cvc,
+          cvc,
         },
       });
-      console.log("token,,,,,",token)
-
-      const existingCards = token.card;
- console.log("existingCards", existingCards);
-
-let cardExists = false;
-if (Array.isArray(existingCards)) {
-  cardExists = existingCards.some(card => card.last4 === cardNumber.substr(-4));
   
-}
-
-console.log("cardExists", cardExists);
-      // const existingCards =  token.card
-      // console.log("existingCards",existingCards);
-      
-      // const cardExists = existingCards.some(card => card.last4 === cardNumber.substr(-4));
-      // console.log("cardExists",cardExists);
-
-
+      const existingCards = await stripe.customers.listSources(customer.stripe_id, { object: 'card' });
+  
+      const cardExists = existingCards.data.some((card) => card.last4 === cardNumber.substr(-4));
+  
       if (cardExists) {
         const message = 'Card already exists for the customer.';
         return res.status(400).json({ message });
       }
-
-
-      // Step 5: Create a new card for the customer in Stripe
+  
       await stripe.customers.createSource(customer.stripe_id, {
-        source:	'tok_visa'
-       
-        
-        
+        source: token.id,
       });
   
       const message = 'New card added to the customer.';
