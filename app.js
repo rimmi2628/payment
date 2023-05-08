@@ -114,11 +114,22 @@ app.get('/', (req, res) => {
         },
       });
       console.log("token,,,,,",token)
-      const existingCards =  token.card? token.card: [];
-      console.log("existingCards",existingCards);
+
+      const existingCards = token.card;
+ console.log("existingCards", existingCards);
+
+let cardExists = false;
+if (Array.isArray(existingCards)) {
+  cardExists = existingCards.some(card => card.last4 === cardNumber.substr(-4));
+  
+}
+
+console.log("cardExists", cardExists);
+      // const existingCards =  token.card
+      // console.log("existingCards",existingCards);
       
-      const cardExists = (existingCards.last4 === cardNumber.substr(-4));
-      console.log("cardExists",cardExists);
+      // const cardExists = existingCards.some(card => card.last4 === cardNumber.substr(-4));
+      // console.log("cardExists",cardExists);
 
 
       if (cardExists) {
